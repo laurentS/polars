@@ -77,7 +77,7 @@ impl Serialize for PythonFunction {
 
             let dumped = pickle
                 .call1((python_function,))
-                .map_err(|s| S::Error::custom(format!("cannot pickle {s}")))?;
+                .map_err(|s| S::Error::custom(format!("cannot pickle: {s}")))?;
             let dumped = dumped.extract::<PyBackedBytes>().unwrap();
 
             serializer.serialize_bytes(&dumped)
@@ -102,7 +102,7 @@ impl<'a> Deserialize<'a> for PythonFunction {
             let arg = (PyBytes::new_bound(py, &bytes),);
             let python_function = pickle
                 .call1(arg)
-                .map_err(|s| D::Error::custom(format!("cannot pickle {s}")))?;
+                .map_err(|s| D::Error::custom(format!("cannot unpickle: {s}")))?;
 
             Ok(Self(python_function.into()))
         })
@@ -178,7 +178,7 @@ impl PythonUdfExpression {
 }
 
 fn from_pyerr(e: PyErr) -> PolarsError {
-    PolarsError::ComputeError(format!("error raised in python: {e}").into())
+    PolarsError::ComputeError(format!("error raised in Python: {e}").into())
 }
 
 impl DataFrameUdf for PythonFunction {
